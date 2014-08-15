@@ -65,7 +65,7 @@ function SelectView (opts) {
 
     this.render();
 
-    this.setValue(opts.value);
+    opts.value && this.setValue(opts.value);
 }
 
 SelectView.prototype.render = function () {
@@ -141,6 +141,7 @@ SelectView.prototype.updateSelectedOption = function () {
 
     if (!lookupValue) {
         this.select.selectedIndex = 0;
+        this.setValue(this.select.value);
         return;
     }
 
@@ -198,8 +199,20 @@ SelectView.prototype.setValue = function (value) {
 };
 
 SelectView.prototype.validate = function () {
-    this.valid = this.options.some(function (element) {
+    // If unselectedText is set and we select it (this option has no value)
+    if (this.unselectedText && !this.value) {
+        if (this.required) {
+            // If it's required display prompt and return invalid
+            this.setMessage(this.requiredMessage);
+            return this.valid = false;
+        } else {
+            // If it's not required reset prompt and return valid
+            this.setMessage();
+            return this.valid = true;
+        }
+    }
 
+    this.valid = this.options.some(function (element) {
         //If it's a collection, ensure it's in the collection
         if (this.options.isCollection) {
             if (this.yieldModel) {
